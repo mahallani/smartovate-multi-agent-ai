@@ -1,0 +1,50 @@
+{
+  "model_type": "XGBClassifier + Platt(sigmoid) calibration",
+  "config_name": "C - Top-12 features",
+  "selected_features": [
+    "estimated_task_complexity",
+    "code_length",
+    "task_complexity_score",
+    "planner_ratio",
+    "technical_keyword_count",
+    "code_line_count",
+    "contains_api",
+    "planner_completion_tokens",
+    "planner_execution_time",
+    "coder_total_tokens",
+    "coder_prompt_tokens",
+    "coder_completion_tokens"
+  ],
+  "scale_pos_weight": 2.5714285714285716,
+  "xgb_params": {
+    "n_estimators": 150,
+    "max_depth": 3,
+    "learning_rate": 0.08,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "eval_metric": "logloss"
+  },
+  "calibration_method": "sigmoid (Platt scaling, LogisticRegression sur score brut 1D)",
+  "decision_threshold": 0.25,
+  "threshold_selection_rule": "F1 max sous contrainte Precision_train >= 0.35, recherche sur grille [0.20..0.60 pas 0.05], choisi via OOF calibre sur 150 lignes (StratifiedGroupKFold groups=task)",
+  "training_rows": 150,
+  "positive_count": 42,
+  "negative_count": 108,
+  "validation_strategy": "StratifiedGroupKFold(n_splits=5, groups=task) pour l'evaluation ; calibrateur et seuil choisis via OOF interne, jamais sur la validation externe",
+  "random_state": 42,
+  "expected_performance_grouped_cv": {
+    "Accuracy": "0.702 +/- 0.096",
+    "Precision": "0.508 +/- 0.203",
+    "Recall": "0.495 +/- 0.235",
+    "F1": "0.471 +/- 0.159",
+    "ROC-AUC": "0.703 +/- 0.090",
+    "PR-AUC": "0.506 +/- 0.107",
+    "Brier": "0.186 +/- 0.016"
+  },
+  "known_limitations": [
+    "150 lignes seulement, 23 taches uniques -> forte variance inter-fold",
+    "18/23 taches ont des resultats revision_required mixtes -> part d'alea non predictible",
+    "code_length/tokens_per_line/code_density plafonnes (winsorized) dans le dataset source, non decappes",
+    "Necessite les stats d'execution planner/coder/code (donc appelable seulement APRES Planner+Coder, PAS a partir du seul texte de la tache)"
+  ]
+}

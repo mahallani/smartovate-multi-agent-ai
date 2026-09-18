@@ -1,0 +1,6 @@
+streamlit==1.60.0
+python-dotenv==1.2.2
+autogen-agentchat==0.7.5
+autogen-core==0.7.5
+autogen-ext[openai,docker]==0.7.5
+docker==7.2.0

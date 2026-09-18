@@ -1,0 +1,802 @@
+/* ============================================================
+   SMARTOVATE — AI Multi-Agent Studio
+   Thème CLAIR premium (glassmorphism lumineux, violet/rose/cyan)
+   ------------------------------------------------------------
+   Inspiration : ambiance visuelle générale uniquement (dégradé
+   violet/rose, cartes très arrondies, halos lumineux, boutons
+   pleine largeur en dégradé). Aucun logo, aucun texte ni aucune
+   identité de marque tierce reproduits.
+   Type : Space Grotesk (display) · Inter (body) · JetBrains Mono
+   (code / terminal, volontairement en thème sombre "éditeur").
+   ------------------------------------------------------------
+   RÈGLE DE COMPATIBILITÉ : aucun nom de classe ni de variable
+   existant n'a été renommé ou supprimé. Les composants NON
+   modifiés (docker_logs.py, export.py) continuent donc de rendre
+   correctement, et héritent automatiquement du nouveau thème.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+    /* Couleurs de marque (palette validée §10) */
+    --color-primary: #6D28D9;         /* violet */
+    --color-primary-light: #8B5CF6;   /* violet clair */
+    --color-primary-dark: #5B21B6;    /* violet profond (texte) */
+    --color-pink: #EC4899;            /* rose */
+    --color-cyan: #06B6D4;            /* cyan */
+    --color-secondary: #06B6D4;       /* alias historique -> cyan */
+    --color-accent: #06B6D4;          /* accent (Docker) */
+    --color-ml: #A855F7;              /* ML Risk (violet clair distinct) */
+
+    /* Surfaces (thème clair, fond très légèrement violet) */
+    --color-bg: #FAF8FF;
+    --color-card: #FFFFFF;
+    --color-text: #1E1B2E;
+    --color-subtitle: #6B7280;
+    --color-success: #22C55E;
+    --color-warning: #D97706;
+    --color-error: #DC2626;
+
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    --radius-xl: 30px;
+    --radius-lg: 24px;
+    --radius-md: 16px;
+    --radius-sm: 10px;
+    --radius-btn: 14px;
+
+    --shadow-soft: 0 10px 34px rgba(109, 40, 217, 0.10), 0 2px 8px rgba(15, 23, 42, 0.04);
+    --shadow-lift: 0 18px 46px rgba(109, 40, 217, 0.16), 0 4px 12px rgba(15, 23, 42, 0.05);
+    --shadow-glow-primary: 0 0 28px rgba(139, 92, 246, 0.30);
+    --shadow-glow-pink: 0 0 26px rgba(236, 72, 153, 0.26);
+
+    --gradient-brand: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 45%, var(--color-pink) 100%);
+    --gradient-brand-soft: linear-gradient(135deg, rgba(109,40,217,0.10), rgba(236,72,153,0.08));
+
+    --glass-bg: rgba(255, 255, 255, 0.70);
+    --glass-border: rgba(109, 40, 217, 0.14);
+    --sheen: rgba(109, 40, 217, 0.05);
+}
+
+/* ---------- Reset / base ---------- */
+html, body, [class*="css"] {
+    font-family: var(--font-body);
+    color: var(--color-text);
+}
+
+.stApp {
+    background:
+        radial-gradient(circle at 8% -6%, rgba(109, 40, 217, 0.13), transparent 42%),
+        radial-gradient(circle at 92% 2%, rgba(236, 72, 153, 0.10), transparent 40%),
+        radial-gradient(circle at 50% 104%, rgba(6, 182, 212, 0.09), transparent 46%),
+        var(--color-bg);
+}
+
+h1, h2, h3, h4, .sv-display { font-family: var(--font-display); letter-spacing: -0.01em; color: var(--color-text); }
+code, pre, .sv-mono { font-family: var(--font-mono) !important; }
+
+#MainMenu, footer, header[data-testid="stHeader"] { visibility: hidden; height: 0; }
+.block-container { padding-top: 2rem; padding-bottom: 3rem; max-width: 1220px; overflow-x: hidden; }
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: rgba(109,40,217,0.25); border-radius: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+@media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
+
+/* ============================================================
+   MODE "ANIMATIONS DÉSACTIVÉES" (toggle sidebar -> settings.animations)
+   ------------------------------------------------------------
+   Ajoutée par les composants Python sur l'élément RACINE de chaque
+   bloc rendu (les blocs Streamlit étant des noeuds DOM séparés, une
+   classe posée sur un conteneur global ne les atteindrait pas).
+   Neutralise toute animation/transition SANS masquer aucun état ni
+   aucune information : les couleurs, badges, coches et libellés
+   restent strictement identiques.
+   ============================================================ */
+.sv-no-anim,
+.sv-no-anim *,
+.sv-no-anim *::before,
+.sv-no-anim *::after {
+    animation: none !important;
+    transition: none !important;
+}
+/* Les éléments dont l'état de repos est produit PAR l'animation
+   (opacity:0 au départ) doivent rester visibles sans elle. */
+.sv-no-anim .sv-terminal-line,
+.sv-no-anim .sv-node,
+.sv-no-anim .sv-timeline-row { opacity: 1 !important; transform: none !important; }
+
+/* ---------- Glass card base ---------- */
+.sv-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: var(--shadow-soft);
+    padding: 1.6rem 1.8rem;
+    margin-bottom: 1.2rem;
+    animation: sv-fade-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
+}
+.sv-card:hover { box-shadow: var(--shadow-lift); border-color: rgba(109,40,217,0.22); }
+@keyframes sv-fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.sv-main-container { position: relative; }
+
+/* Intitulé de section (structure de page §9) */
+.sv-section-title {
+    font-family: var(--font-display); font-weight: 700; font-size: 0.78rem;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--color-primary-dark); margin: 1.6rem 0 0.7rem 0;
+    display: flex; align-items: center; gap: 0.6rem;
+}
+.sv-section-title::after {
+    content: ""; flex: 1; height: 1px;
+    background: linear-gradient(90deg, rgba(109,40,217,0.28), transparent);
+}
+
+/* ---------- Hero ---------- */
+.sv-hero {
+    position: relative;
+    border-radius: var(--radius-xl);
+    padding: 3.4rem 3rem;
+    margin-bottom: 1.6rem;
+    overflow: hidden;
+    background: linear-gradient(150deg, #FFFFFF 0%, #F5F0FF 45%, #FDF2F8 100%);
+    border: 1px solid rgba(109,40,217,0.12);
+    box-shadow: 0 24px 64px rgba(109,40,217,0.13), 0 4px 14px rgba(15,23,42,0.04);
+}
+.sv-hero-content { position: relative; z-index: 2; }
+.sv-hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--color-primary-dark); font-weight: 700; margin-bottom: 0.8rem;
+    background: rgba(109,40,217,0.09);
+    border: 1px solid rgba(109,40,217,0.14);
+    padding: 0.35rem 0.9rem; border-radius: 999px;
+}
+.sv-hero-title {
+    font-family: var(--font-display);
+    font-size: 2.9rem; font-weight: 700; line-height: 1.08;
+    margin: 0 0 0.9rem 0;
+    background: linear-gradient(100deg, var(--color-primary) 8%, var(--color-pink) 52%, var(--color-primary-light) 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.sv-hero-subtitle { color: var(--color-subtitle); font-size: 1.12rem; max-width: 640px; line-height: 1.6; }
+
+.sv-hero-glow {
+    position: absolute; border-radius: 50%; filter: blur(64px);
+    z-index: 1; opacity: 0.75; animation: sv-float 10s ease-in-out infinite; pointer-events: none;
+}
+.sv-hero-glow-a { width: 280px; height: 280px; background: rgba(109,40,217,0.32); top: -80px; right: 6%; }
+.sv-hero-glow-b { width: 210px; height: 210px; background: rgba(236,72,153,0.28); bottom: -60px; left: 4%; animation-delay: 2.5s; }
+.sv-hero-glow-c { width: 175px; height: 175px; background: rgba(6,182,212,0.26); top: 20%; right: 32%; animation-delay: 5s; }
+@keyframes sv-float {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-20px) scale(1.1); }
+}
+.sv-hero-badges { display: flex; gap: 0.6rem; margin-top: 1.3rem; flex-wrap: wrap; position: relative; z-index: 2; }
+.sv-hero-badge {
+    font-size: 0.82rem; font-weight: 600;
+    padding: 0.45rem 1rem; border-radius: 999px;
+    background: rgba(255,255,255,0.80);
+    border: 1px solid rgba(109,40,217,0.16);
+    color: var(--color-text);
+    box-shadow: 0 4px 14px rgba(109,40,217,0.09);
+    backdrop-filter: blur(8px);
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.sv-hero-badge:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(109,40,217,0.16); }
+/* Badges à état RÉEL (voir components/hero.py) */
+.sv-hero-badge-on { border-color: rgba(34,197,94,0.34); }
+.sv-hero-badge-off { border-color: rgba(220,38,38,0.30); color: var(--color-subtitle); }
+
+/* ---------- Sidebar ---------- */
+section[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #FFFFFF 0%, #F6F1FF 55%, #FDF2F8 100%);
+    border-right: 1px solid rgba(109,40,217,0.10);
+}
+.sv-logo { display: flex; align-items: center; gap: 0.6rem; font-family: var(--font-display); font-weight: 700; font-size: 1.2rem; }
+.sv-logo-mark {
+    width: 38px; height: 38px; border-radius: 13px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--gradient-brand);
+    box-shadow: var(--shadow-glow-primary); color: #fff; font-size: 1.05rem;
+}
+.sv-tagline { color: var(--color-subtitle); font-size: 0.82rem; margin-bottom: 1.3rem; }
+.sv-status-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.6rem 0.9rem; border-radius: var(--radius-sm);
+    background: #FFFFFF; border: 1px solid rgba(109,40,217,0.10);
+    margin-bottom: 0.5rem; font-size: 0.85rem;
+    box-shadow: 0 2px 8px rgba(15,23,42,0.03);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.sv-status-row:hover { border-color: rgba(109,40,217,0.24); box-shadow: 0 4px 14px rgba(109,40,217,0.10); }
+.sv-status-value-ok { color: var(--color-success); font-weight: 700; font-size: 0.78rem; }
+.sv-status-value-ko { color: var(--color-error); font-weight: 700; font-size: 0.78rem; }
+.sv-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 0.4rem; }
+.sv-dot-green { background: var(--color-success); box-shadow: 0 0 8px rgba(34,197,94,0.65); animation: sv-pulse 1.8s ease-in-out infinite; }
+.sv-dot-red { background: var(--color-error); box-shadow: 0 0 8px rgba(220,38,38,0.5); }
+@keyframes sv-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+.sv-sidebar-section-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-subtitle); margin: 1.2rem 0 0.5rem 0; font-weight: 700; }
+.sv-sidebar-model-card {
+    background: var(--gradient-brand-soft);
+    border: 1px solid rgba(109,40,217,0.16); border-radius: var(--radius-md);
+    padding: 0.75rem 0.95rem; margin-bottom: 0.6rem;
+}
+.sv-sidebar-model-name { font-family: var(--font-mono); font-weight: 700; font-size: 0.85rem; color: var(--color-primary-dark); }
+.sv-sidebar-arch { background: #FFFFFF; border: 1px solid rgba(109,40,217,0.10); border-radius: var(--radius-md); padding: 0.8rem 0.55rem; box-shadow: 0 2px 8px rgba(15,23,42,0.03); }
+.sv-arch-step {
+    font-family: var(--font-mono); font-size: 0.76rem; color: var(--color-text);
+    padding: 0.34rem 0.5rem; text-align: left; font-weight: 600;
+    border-radius: 8px; display: flex; align-items: center; gap: 0.4rem;
+    border: 1px solid transparent; transition: all 0.25s ease;
+}
+.sv-arch-arrow { text-align: center; color: var(--color-primary); opacity: 0.5; font-size: 0.75rem; line-height: 1; }
+/* États RÉELS, dérivés de workflow.compute_statuses() -- voir sidebar.py */
+.sv-arch-step-waiting { opacity: 0.5; }
+.sv-arch-step-active {
+    background: linear-gradient(135deg, rgba(236,72,153,0.12), rgba(139,92,246,0.10));
+    border-color: rgba(236,72,153,0.32); color: var(--color-primary-dark);
+    box-shadow: 0 0 14px rgba(236,72,153,0.18);
+    animation: sv-arch-glow 1.9s ease-in-out infinite;
+}
+@keyframes sv-arch-glow { 0%,100% { box-shadow: 0 0 10px rgba(236,72,153,0.16); } 50% { box-shadow: 0 0 20px rgba(236,72,153,0.32); } }
+.sv-arch-step-done { background: rgba(34,197,94,0.08); border-color: rgba(34,197,94,0.26); }
+.sv-arch-step-failed { background: rgba(220,38,38,0.08); border-color: rgba(220,38,38,0.30); color: var(--color-error); }
+.sv-arch-state { margin-left: auto; font-size: 0.64rem; font-weight: 700; letter-spacing: 0.05em; opacity: 0.85; }
+
+.sv-history-item { padding: 0.55rem 0.7rem; border-radius: var(--radius-sm); margin-bottom: 0.3rem; font-size: 0.85rem; color: var(--color-subtitle); border: 1px solid transparent; cursor: pointer; }
+.sv-history-item:hover { background: rgba(109,40,217,0.05); border-color: rgba(109,40,217,0.12); }
+.sv-history-active { background: rgba(109,40,217,0.09); border-color: rgba(109,40,217,0.3); color: var(--color-text); font-weight: 600; }
+
+/* ---------- Boutons : coins très arrondis, dégradé de marque ---------- */
+.stButton > button {
+    border-radius: var(--radius-btn) !important;
+    font-weight: 600 !important;
+    border: 1px solid rgba(109,40,217,0.16) !important;
+    transition: transform 0.18s cubic-bezier(0.16,1,0.3,1), box-shadow 0.18s ease, border-color 0.18s ease !important;
+    background: #FFFFFF !important;
+    color: var(--color-text) !important;
+}
+.stButton > button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(109,40,217,0.17); border-color: rgba(109,40,217,0.34) !important; }
+.stButton > button:disabled { opacity: 0.55 !important; transform: none !important; box-shadow: none !important; }
+
+/* Bouton principal ("Envoyer") : dégradé violet -> rose plein, comme la
+   référence visuelle. Plusieurs sélecteurs pour couvrir les différentes
+   versions de Streamlit (kind=, data-testid=). */
+div[data-testid="stFormSubmitButton"] button,
+.stButton > button[kind="primary"],
+.stButton > button[kind="primaryFormSubmit"],
+button[data-testid="stBaseButton-primary"],
+.sv-btn-primary button {
+    background: var(--gradient-brand) !important;
+    color: #fff !important;
+    border: none !important;
+    box-shadow: 0 10px 26px rgba(109,40,217,0.30) !important;
+    letter-spacing: 0.01em;
+}
+div[data-testid="stFormSubmitButton"] button:hover,
+.stButton > button[kind="primary"]:hover,
+button[data-testid="stBaseButton-primary"]:hover {
+    box-shadow: 0 14px 34px rgba(236,72,153,0.34) !important;
+    filter: brightness(1.05);
+}
+
+/* ---------- Zone de saisie ---------- */
+.sv-prompt-wrapper { position: relative; margin: 0.4rem 0 0.6rem 0; }
+.sv-prompt-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+    padding: 1.15rem 1.35rem 0.6rem 1.35rem;
+    margin-bottom: 0.4rem;
+    backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+}
+.sv-prompt-label {
+    font-family: var(--font-display); font-weight: 700; font-size: 0.95rem;
+    display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.15rem;
+}
+.sv-prompt-hint { color: var(--color-subtitle); font-size: 0.8rem; margin: 0 0 0.55rem 0; }
+.sv-prompt-examples-label { color: var(--color-subtitle); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; margin: 0.35rem 0 0.2rem 0; }
+.stTextArea textarea {
+    border-radius: var(--radius-md) !important;
+    border: 1px solid rgba(109,40,217,0.18) !important;
+    background: #FFFFFF !important;
+    font-family: var(--font-body) !important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+.stTextArea textarea:focus {
+    border-color: var(--color-primary-light) !important;
+    box-shadow: 0 0 0 3px rgba(139,92,246,0.16) !important;
+}
+
+/* ---------- Agent cards ---------- */
+.sv-agent-card { border-top: 3px solid transparent; padding: 1.3rem 1.45rem; }
+
+/* Highlight rose/violet du Reviewer, piloté UNIQUEMENT par le statut
+   APPROVED (voir agent_cards.py::render_reviewer_card) -- jamais par un
+   timer ni par l'état de Docker. */
+.sv-agent-reviewer-approved {
+    background: linear-gradient(165deg, rgba(255,255,255,0.94), rgba(253,242,248,0.94));
+    border-color: rgba(236,72,153,0.30);
+    box-shadow: 0 14px 34px rgba(236,72,153,0.16), 0 2px 8px rgba(15,23,42,0.04);
+}
+/* Contrepartie visuelle explicite quand une révision est demandée
+   (aucune guirlande dans ce cas -- voir §5). */
+.sv-agent-reviewer-revision {
+    background: linear-gradient(165deg, rgba(255,255,255,0.94), rgba(255,251,235,0.94));
+    border-color: rgba(217,119,6,0.30);
+}
+.sv-agent-planner { border-top-color: var(--color-cyan); }
+.sv-agent-codeur { border-top-color: var(--color-primary); }
+.sv-agent-ml-risk { border-top-color: var(--color-ml); }
+.sv-agent-reviewer { border-top-color: var(--color-pink); }
+.sv-agent-docker { border-top-color: var(--color-accent); }
+
+.sv-agent-header { display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap; margin-bottom: 1rem; font-size: 1.15rem; font-family: var(--font-display); font-weight: 700; }
+.sv-agent-header span:first-child { font-size: 1.3rem; }
+
+.sv-badge { font-size: 0.72rem; padding: 0.28rem 0.8rem; border-radius: 999px; font-family: var(--font-body); font-weight: 700; letter-spacing: 0.01em; }
+.sv-badge-thinking { background: rgba(6,182,212,0.14); color: #0E7490; }
+.sv-badge-typing { background: rgba(139,92,246,0.15); color: var(--color-primary-dark); }
+.sv-badge-approved { background: rgba(34,197,94,0.15); color: #15803D; }
+.sv-badge-revision { background: rgba(217,119,6,0.14); color: var(--color-warning); }
+.sv-badge-error { background: rgba(220,38,38,0.13); color: var(--color-error); }
+
+/* ---------- ML Risk Predictor : niveaux de risque (signal informatif,
+   distinct visuellement des statuts du Reviewer ci-dessus) ---------- */
+.sv-badge-risk-low { background: rgba(34,197,94,0.15); color: #15803D; }
+.sv-badge-risk-medium { background: rgba(217,119,6,0.14); color: var(--color-warning); }
+.sv-badge-risk-high { background: rgba(220,38,38,0.13); color: var(--color-error); }
+
+/* Bandeau de tête façon "tableau de bord" : RISK / PROBABILITY / DECISION */
+.sv-ml-risk-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.9rem; margin: 0.2rem 0 0.9rem 0;
+    background: linear-gradient(135deg, rgba(168,85,247,0.07), rgba(109,40,217,0.05));
+    border: 1px solid rgba(168,85,247,0.18); border-radius: var(--radius-md);
+    padding: 1rem 1.15rem;
+}
+.sv-ml-risk-stat { display: flex; flex-direction: column; gap: 0.35rem; }
+.sv-ml-risk-stat-label { font-size: 0.7rem; color: var(--color-subtitle); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; }
+.sv-ml-risk-stat-value { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; width: fit-content; }
+.sv-ml-risk-probability { color: var(--color-ml); font-size: 1.5rem; }
+.sv-ml-risk-disclaimer { margin: 0; font-size: 0.8rem; color: var(--color-subtitle); font-style: italic; }
+.sv-ml-risk-explainer { margin: 0 0 0.5rem 0; font-size: 0.82rem; color: var(--color-subtitle); }
+.sv-ml-risk-threshold { margin: 0 0 0.8rem 0; font-size: 0.82rem; color: var(--color-subtitle); }
+.sv-ml-risk-context { margin: 0 0 0.9rem 0; }
+.sv-ml-risk-context-title { display: block; font-size: 0.74rem; font-weight: 700; color: var(--color-subtitle); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.55rem; }
+.sv-ml-risk-context-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 0.45rem 1.3rem; }
+.sv-ml-risk-context-row { display: flex; justify-content: space-between; gap: 0.6rem; font-size: 0.82rem; border-bottom: 1px dashed var(--glass-border); padding-bottom: 0.3rem; }
+.sv-ml-risk-context-label { color: var(--color-subtitle); }
+.sv-ml-risk-context-value { font-weight: 700; font-family: var(--font-mono); font-size: 0.78rem; }
+
+/* ---------- Carte Reviewer : méta réelles (itération / max / final) ---------- */
+.sv-reviewer-meta {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 0.7rem; margin: 0 0 0.85rem 0;
+}
+.sv-reviewer-meta-item {
+    background: #FFFFFF; border: 1px solid rgba(109,40,217,0.12);
+    border-radius: var(--radius-sm); padding: 0.6rem 0.85rem;
+}
+.sv-reviewer-meta-label { display: block; font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-subtitle); font-weight: 700; }
+.sv-reviewer-meta-value { display: block; font-family: var(--font-display); font-weight: 700; font-size: 1rem; margin-top: 0.15rem; }
+.sv-reviewer-meta-value-ok { color: var(--color-success); }
+.sv-reviewer-meta-value-ko { color: var(--color-warning); }
+
+.sv-summary { color: var(--color-subtitle); line-height: 1.65; margin: 0 0 0.9rem 0; }
+.sv-plan-body, .sv-reviewer-body { line-height: 1.75; color: var(--color-text); padding: 0.9rem 1.1rem; }
+.sv-typing-cursor::after { content: "▍"; color: var(--color-primary-light); animation: sv-blink 1s steps(1) infinite; }
+@keyframes sv-blink { 50% { opacity: 0; } }
+
+.sv-copy-btn, .sv-download-btn {
+    margin-left: auto; font-family: var(--font-mono); font-size: 0.72rem;
+    background: #FFFFFF; border: 1px solid rgba(109,40,217,0.20); color: var(--color-subtitle);
+    border-radius: 999px; padding: 0.3rem 0.85rem; cursor: pointer;
+    transition: all 0.15s ease; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem;
+}
+.sv-copy-btn:hover, .sv-download-btn:hover { border-color: var(--color-primary-light); color: var(--color-primary-dark); box-shadow: 0 4px 12px rgba(109,40,217,0.14); transform: translateY(-1px); }
+
+/* ---------- Sections repliables ---------- */
+.sv-collapsible { border: 1px solid rgba(109,40,217,0.12); border-radius: var(--radius-md); background: #FFFFFF; margin-top: 0.6rem; overflow: hidden; box-shadow: 0 2px 8px rgba(15,23,42,0.03); }
+.sv-collapsible > summary { cursor: pointer; padding: 0.7rem 1.05rem; font-weight: 700; font-size: 0.85rem; color: var(--color-subtitle); list-style: none; display: flex; align-items: center; user-select: none; transition: background 0.15s ease; }
+.sv-collapsible > summary::-webkit-details-marker { display: none; }
+.sv-collapsible > summary::before { content: "▸"; display: inline-block; margin-right: 0.55rem; color: var(--color-primary-light); transition: transform 0.2s ease; }
+.sv-collapsible[open] > summary::before { transform: rotate(90deg); }
+.sv-collapsible > summary:hover { background: rgba(109,40,217,0.04); color: var(--color-text); }
+.sv-collapsible-body { padding: 0 0 0 0; animation: sv-collapse-in 0.2s ease both; }
+@keyframes sv-collapse-in { from { opacity: 0; } to { opacity: 1; } }
+.sv-collapsible-code { background: transparent; }
+
+/* ---------- Code, façon VS Code (thème sombre volontaire) ---------- */
+.sv-code-editor { background: #1E1B2E; border-radius: 0 0 var(--radius-md) var(--radius-md); overflow: hidden; }
+.sv-code-editor-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.5rem 0.9rem; background: #171424; border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.sv-code-lang-badge { font-family: var(--font-mono); font-size: 0.7rem; color: #C4B5FD; background: rgba(139,92,246,0.16); padding: 0.15rem 0.6rem; border-radius: 6px; }
+.sv-code-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; line-height: 1.65; }
+.sv-code-line-num { width: 1%; padding: 0 0.9rem; text-align: right; color: #5B5F76; user-select: none; font-family: var(--font-mono); vertical-align: top; }
+.sv-code-line-content { padding-right: 1rem; color: #D9D2FF; font-family: var(--font-mono); white-space: pre; }
+.sv-kw { color: #C792EA; } .sv-str { color: #A9DC76; } .sv-com { color: #6A7280; font-style: italic; } .sv-num { color: #F78C6C; } .sv-fn { color: #82AAFF; }
+
+/* ============================================================
+   PIPELINE VISUEL (workflow.py)
+   ============================================================ */
+.sv-workflow-card {
+    padding: 1.15rem 1.5rem 1.1rem 1.5rem;
+    background: linear-gradient(150deg, rgba(255,255,255,0.86), rgba(247,242,255,0.86));
+    border-color: rgba(109,40,217,0.16);
+}
+
+/* Ligne d'en-tête fixe : le libellé "PIPELINE D'EXÉCUTION" est toujours
+   affiché ; seul le texte d'étape / le badge "Terminé" varient sur cette
+   même ligne -- aucune variation de hauteur entre les états. */
+.sv-workflow-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem; flex-wrap: wrap; gap: 0.4rem; }
+.sv-workflow-eyebrow { font-family: var(--font-mono); font-size: 0.72rem; color: var(--color-primary-dark); letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; }
+.sv-workflow-step { font-size: 0.76rem; color: var(--color-subtitle); font-weight: 600; display: inline-flex; align-items: center; }
+.sv-workflow-done-pill {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    font-size: 0.72rem; font-weight: 700; color: #15803D;
+    background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.28);
+    padding: 0.18rem 0.6rem; border-radius: 999px; margin-left: 0.55rem;
+}
+.sv-workflow-error-pill {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    font-size: 0.72rem; font-weight: 700; color: var(--color-error);
+    background: rgba(220,38,38,0.10); border: 1px solid rgba(220,38,38,0.28);
+    padding: 0.18rem 0.6rem; border-radius: 999px; margin-left: 0.55rem;
+}
+
+.sv-workflow { display: flex; align-items: flex-start; justify-content: space-between; padding: 1rem 0.6rem 0.3rem 0.6rem; position: relative; }
+
+/* Un noeud = icône + nom + description courte + état.
+   Hauteur minimale fixe : la structure ne bouge JAMAIS d'un état à
+   l'autre (waiting / active / done / failed). */
+.sv-node {
+    display: flex; flex-direction: column; align-items: center; gap: 0.35rem;
+    font-size: 0.82rem; color: var(--color-subtitle); z-index: 1;
+    flex: 1 1 0; min-width: 96px; max-width: 190px; font-weight: 600;
+    text-align: center; padding: 0 0.3rem;
+    animation: sv-fade-in 0.4s ease both;
+}
+.sv-node-dot {
+    width: 46px; height: 46px; border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    background: #FFFFFF; border: 2px solid rgba(109,40,217,0.16);
+    font-size: 1.25rem; position: relative;
+    box-shadow: 0 4px 14px rgba(15,23,42,0.06);
+    transition: all 0.35s cubic-bezier(0.16,1,0.3,1);
+}
+.sv-node-name { font-family: var(--font-display); font-weight: 700; font-size: 0.86rem; color: var(--color-text); line-height: 1.2; }
+.sv-node-desc { font-size: 0.68rem; font-weight: 500; color: var(--color-subtitle); line-height: 1.3; min-height: 2.1em; }
+.sv-node-state {
+    font-size: 0.6rem; font-weight: 800; letter-spacing: 0.09em;
+    padding: 0.12rem 0.5rem; border-radius: 999px; text-transform: uppercase;
+}
+
+.sv-node-waiting .sv-node-dot { opacity: 0.5; }
+.sv-node-waiting .sv-node-state { background: rgba(107,114,128,0.12); color: var(--color-subtitle); }
+.sv-node-waiting .sv-node-name { color: var(--color-subtitle); }
+
+.sv-node-active .sv-node-dot {
+    border-color: var(--color-pink);
+    background: linear-gradient(135deg, #FFFFFF, #FDF2F8);
+    animation: sv-node-pulse 1.6s ease-in-out infinite;
+    transform: scale(1.06);
+}
+.sv-node-active { color: var(--color-pink); }
+.sv-node-active .sv-node-name { color: var(--color-primary-dark); }
+.sv-node-active .sv-node-state { background: rgba(236,72,153,0.14); color: #BE185D; }
+@keyframes sv-node-pulse {
+    0%, 100% { box-shadow: 0 0 0 5px rgba(236,72,153,0.10), 0 0 16px rgba(236,72,153,0.30); }
+    50% { box-shadow: 0 0 0 9px rgba(236,72,153,0.15), 0 0 26px rgba(236,72,153,0.48); }
+}
+
+/* Le noeud "done" conserve son icône d'origine : un badge vert ✓ est
+   superposé, donc la structure (icône + nom + description + état) reste
+   strictement identique dans tous les états. */
+.sv-node-done .sv-node-dot { border-color: rgba(34,197,94,0.42); background: linear-gradient(135deg, #FFFFFF, #F0FDF4); }
+.sv-node-done .sv-node-dot::after {
+    content: "✓"; position: absolute; right: -5px; bottom: -5px;
+    width: 19px; height: 19px; border-radius: 50%;
+    background: var(--color-success); color: #fff;
+    font-size: 0.68rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid #FFFFFF; box-shadow: 0 2px 6px rgba(34,197,94,0.4);
+    animation: sv-check-pop 0.45s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.sv-node-done { color: var(--color-text); }
+.sv-node-done .sv-node-state { background: rgba(34,197,94,0.13); color: #15803D; }
+
+.sv-node-failed .sv-node-dot { border-color: var(--color-error); background: rgba(220,38,38,0.08); color: var(--color-error); box-shadow: 0 0 18px rgba(220,38,38,0.32); }
+.sv-node-failed { color: var(--color-error); }
+.sv-node-failed .sv-node-name { color: var(--color-error); }
+.sv-node-failed .sv-node-state { background: rgba(220,38,38,0.12); color: var(--color-error); }
+
+.sv-trace { position: absolute; top: 33px; left: 9%; right: 9%; height: 3px; background: repeating-linear-gradient(90deg, rgba(109,40,217,0.16) 0 6px, transparent 6px 12px); z-index: 0; border-radius: 3px; }
+.sv-trace-progress {
+    position: absolute; top: 33px; left: 9%; height: 3px;
+    /* Garde-fou : la barre démarre à left:9% et ne doit jamais dépasser
+       le centre du noeud Docker (91%), soit 82% de large au maximum.
+       workflow.py calcule déjà la valeur exacte -- ce plafond garantit
+       qu'aucune valeur erronée ne pourra déborder à droite. */
+    max-width: 82%;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light), var(--color-pink));
+    box-shadow: 0 0 12px rgba(139,92,246,0.55); z-index: 0; border-radius: 3px;
+    transition: width 0.9s cubic-bezier(0.16,1,0.3,1);
+}
+
+/* Particule lumineuse circulant le long de la trace pendant qu'une étape
+   travaille. Les bornes du trajet sont fournies en variables CSS inline
+   par workflow.py (segment réellement en cours), jamais codées ici. */
+.sv-flow-spark {
+    position: absolute; top: 26px; z-index: 2;
+    font-size: 1rem; line-height: 1; color: var(--color-pink);
+    text-shadow: 0 0 10px rgba(236,72,153,0.85), 0 0 20px rgba(139,92,246,0.6);
+    pointer-events: none;
+    animation: sv-spark-travel 2.2s cubic-bezier(0.45,0,0.55,1) infinite;
+}
+@keyframes sv-spark-travel {
+    0%   { left: var(--sv-spark-from, 9%); opacity: 0; transform: scale(0.5); }
+    18%  { opacity: 1; transform: scale(1); }
+    82%  { opacity: 1; transform: scale(1); }
+    100% { left: var(--sv-spark-to, 91%); opacity: 0; transform: scale(0.5); }
+}
+/* Sans animation : la particule n'a plus de sens (elle n'indiquerait
+   rien) -- elle est retirée du rendu côté Python, ce sélecteur n'est
+   qu'un filet de sécurité. */
+.sv-no-anim .sv-flow-spark { display: none; }
+
+/* Bandeau d'erreur du pipeline (état ERROR réel exposé par orchestrator.py) */
+.sv-pipeline-error {
+    display: flex; align-items: center; gap: 0.7rem;
+    background: rgba(220,38,38,0.06); border: 1px solid rgba(220,38,38,0.26);
+    border-radius: var(--radius-md); padding: 0.7rem 1rem; margin-top: 0.7rem;
+    font-size: 0.85rem; font-weight: 600; color: var(--color-error);
+}
+
+/* ---------- Timeline ---------- */
+.sv-timeline-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 0.6rem; transition: all 0.3s ease; flex-shrink: 0; }
+.sv-timeline-status-waiting .sv-timeline-dot { background: #D1D5DB; }
+.sv-timeline-status-running .sv-timeline-dot { background: var(--color-primary-light); box-shadow: 0 0 10px rgba(139,92,246,0.55); animation: sv-pulse 1.4s ease-in-out infinite; }
+.sv-timeline-status-done .sv-timeline-dot { background: var(--color-success); box-shadow: 0 0 8px rgba(34,197,94,0.45); }
+.sv-timeline-status-error .sv-timeline-dot { background: var(--color-error); box-shadow: 0 0 8px rgba(220,38,38,0.4); }
+.sv-timeline-row { display: flex; align-items: center; gap: 0.5rem; padding: 0.65rem 0.4rem; border-bottom: 1px dashed rgba(109,40,217,0.10); animation: sv-fade-in 0.35s ease both; border-radius: 8px; transition: background 0.2s ease; }
+.sv-timeline-row:hover { background: rgba(109,40,217,0.035); }
+.sv-timeline-row:last-child { border-bottom: none; }
+.sv-timeline-row-label { font-weight: 600; flex: 1; }
+.sv-timeline-row-status { font-size: 0.72rem; padding: 0.18rem 0.65rem; border-radius: 999px; font-weight: 700; white-space: nowrap; }
+.sv-timeline-row-time { font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-subtitle); min-width: 58px; text-align: right; }
+
+/* ---------- Statistiques / Execution Overview (cartes KPI) ---------- */
+.sv-stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.85rem; }
+.sv-stat {
+    background: #FFFFFF; border: 1px solid rgba(109,40,217,0.12); border-radius: var(--radius-md);
+    padding: 1rem 1.15rem; box-shadow: 0 2px 10px rgba(15,23,42,0.04);
+    transition: all 0.22s cubic-bezier(0.16,1,0.3,1); position: relative; overflow: hidden;
+}
+.sv-stat::before {
+    content: ""; position: absolute; inset: 0 auto 0 0; width: 3px;
+    background: var(--gradient-brand); opacity: 0.75;
+}
+.sv-stat:hover { border-color: rgba(109,40,217,0.32); transform: translateY(-3px); box-shadow: 0 12px 26px rgba(109,40,217,0.14); }
+.sv-stat-icon { font-size: 1.3rem; margin-bottom: 0.3rem; display: block; }
+.sv-stat-label { font-size: 0.7rem; color: var(--color-subtitle); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 700; }
+.sv-stat-value { font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; margin-top: 0.15rem; color: var(--color-text); }
+.sv-stat-value-ok { color: var(--color-success); }
+.sv-stat-value-ko { color: var(--color-warning); }
+.sv-stat-value-err { color: var(--color-error); }
+
+/* ---------- Terminal Docker ---------- */
+.sv-terminal {
+    background: #14121F; border-radius: var(--radius-md);
+    padding: 1rem 1.15rem; font-family: var(--font-mono); font-size: 0.82rem; color: #D9D2FF;
+    border: 1px solid rgba(139,92,246,0.18);
+}
+.sv-terminal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.7rem; }
+.sv-terminal-title { font-family: var(--font-mono); font-size: 0.75rem; color: #4ADE80; }
+.sv-terminal-line { white-space: pre-wrap; line-height: 1.6; opacity: 0; animation: sv-terminal-line-in 0.4s ease forwards; }
+.sv-terminal-cursor-line::after { content: "▌"; color: #4ADE80; animation: sv-blink 1s steps(1) infinite; margin-left: 2px; }
+@keyframes sv-terminal-line-in { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; transform: translateX(0); } }
+.sv-terminal-dim { color: #4ADE80; }
+.sv-terminal-error { color: #FF6B6B; }
+.sv-terminal-dots { display: flex; gap: 0.4rem; }
+.sv-terminal-dots span { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+.sv-terminal-dots .r { background: #FF5F56; } .sv-terminal-dots .y { background: #FFBD2E; } .sv-terminal-dots .g { background: #27C93F; }
+.sv-terminal-exitcode { font-family: var(--font-mono); font-size: 0.72rem; padding: 0.18rem 0.65rem; border-radius: 999px; font-weight: 700; }
+.sv-terminal-exitcode-ok { background: rgba(74,222,128,0.16); color: #4ADE80; }
+.sv-terminal-exitcode-fail { background: rgba(255,107,107,0.16); color: #FF6B6B; }
+
+/* ---------- Résultat / erreurs / états vides ---------- */
+.sv-card-error { border: 1px solid rgba(220,38,38,0.28); background: rgba(220,38,38,0.04); }
+.sv-empty-state { text-align: center; padding: 2.6rem 1rem; color: var(--color-subtitle); }
+.sv-empty-state-icon { font-size: 2.1rem; margin-bottom: 0.6rem; display: block; opacity: 0.55; }
+
+/* ---------- Shimmer (chargement) ---------- */
+.sv-shimmer { background: linear-gradient(90deg, rgba(109,40,217,0.05) 25%, rgba(139,92,246,0.16) 37%, rgba(109,40,217,0.05) 63%); background-size: 400% 100%; animation: sv-shimmer-move 1.4s ease infinite; border-radius: var(--radius-sm); height: 1rem; }
+@keyframes sv-shimmer-move { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+
+/* ============================================================
+   ZONE DE SUCCÈS + GUIRLANDES LUMINEUSES
+   ------------------------------------------------------------
+   Rendues UNIQUEMENT quand session.approved is True (voir app.py ::
+   bloc de ré-affichage et agent_cards.render_success_garland). Toutes
+   les keyframes sont `infinite` et ne retombent JAMAIS à opacity:0 :
+   les guirlandes restent donc visibles en permanence tant que le
+   résultat est approuvé, y compris pendant et après Docker.
+   ============================================================ */
+.sv-success-zone {
+    position: relative; margin: 0.4rem 0 1.2rem 0;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, rgba(34,197,94,0.07), rgba(139,92,246,0.07) 48%, rgba(236,72,153,0.07));
+    border: 1px solid rgba(34,197,94,0.26);
+    box-shadow: 0 14px 40px rgba(139,92,246,0.16);
+    padding: 0.4rem 1.2rem 0.9rem 1.2rem;
+    overflow: hidden;
+}
+.sv-success-core { text-align: center; padding: 0.5rem 0 0.4rem 0; position: relative; z-index: 2; }
+.sv-success-title {
+    font-family: var(--font-display); font-weight: 700; font-size: 1.3rem;
+    background: linear-gradient(100deg, var(--color-success), var(--color-primary-light) 55%, var(--color-pink));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    display: inline-block;
+}
+.sv-success-subtitle { color: var(--color-subtitle); font-size: 0.84rem; margin-top: 0.2rem; }
+.sv-success-arrow { display: block; text-align: center; color: var(--color-primary-light); font-size: 1.05rem; margin-top: 0.35rem; opacity: 0.75; }
+
+/* Guirlande : un fil + des ampoules qui clignotent doucement et bougent
+   légèrement. Couleurs violet / rose / cyan / vert (§5). */
+.sv-garland { position: relative; height: 26px; }
+.sv-garland-wire {
+    position: absolute; left: 2%; right: 2%; top: 9px; height: 2px;
+    background: repeating-linear-gradient(90deg, rgba(109,40,217,0.30) 0 8px, rgba(236,72,153,0.16) 8px 16px);
+    border-radius: 2px;
+}
+.sv-garland-bulb {
+    position: absolute; top: 4px;
+    width: 11px; height: 11px; border-radius: 50%;
+    background: var(--sv-bulb, var(--color-primary-light));
+    box-shadow: 0 0 10px var(--sv-bulb, var(--color-primary-light)), 0 0 20px var(--sv-bulb, var(--color-primary-light));
+    animation: sv-bulb-glow 2.6s ease-in-out infinite alternate;
+}
+/* Ne retombe jamais à 0 : l'ampoule reste visible en permanence. */
+@keyframes sv-bulb-glow {
+    0%   { opacity: 0.45; transform: translateY(0) scale(0.9); }
+    100% { opacity: 1;    transform: translateY(3px) scale(1.12); }
+}
+.sv-garland-spark {
+    position: absolute; top: 0; font-size: 0.85rem; opacity: 0.85;
+    animation: sv-spark-twinkle 3.2s ease-in-out infinite alternate;
+}
+@keyframes sv-spark-twinkle {
+    0%   { opacity: 0.5; transform: translateY(0) scale(0.9) rotate(-6deg); }
+    100% { opacity: 1;   transform: translateY(-4px) scale(1.1) rotate(6deg); }
+}
+
+/* Célébration historique (conservée : utilisée dans la carte Reviewer
+   pendant le streaming, quand l'objet session n'est pas disponible). */
+.sv-celebration { position: relative; height: 90px; overflow: visible; margin: -0.4rem 0 0.6rem 0; border-radius: var(--radius-md); }
+.sv-celebration-halo {
+    position: absolute; inset: 0; border-radius: var(--radius-md);
+    background: radial-gradient(circle at 50% 40%, rgba(139,92,246,0.26), rgba(236,72,153,0.15) 55%, transparent 75%);
+    animation: sv-halo-pulse 4.5s ease-in-out infinite;
+}
+@keyframes sv-halo-pulse { 0%, 100% { opacity: 0.55; transform: scale(1); } 50% { opacity: 0.9; transform: scale(1.04); } }
+.sv-confetti-piece {
+    position: absolute; top: 6px; width: 8px; height: 14px; opacity: 0.85;
+    animation-name: sv-confetti-drift; animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite; animation-direction: alternate;
+    border-radius: 2px;
+}
+@keyframes sv-confetti-drift {
+    0%   { transform: translateY(0) rotate(var(--sv-rot, 0deg)); }
+    100% { transform: translateY(8px) rotate(calc(var(--sv-rot, 0deg) + 14deg)); }
+}
+.sv-star-piece { position: absolute; top: 8px; font-size: 1rem; opacity: 0.8; animation: sv-star-twinkle 3s ease-in-out infinite; }
+@keyframes sv-star-twinkle { 0%, 100% { opacity: 0.5; transform: translateY(0) scale(0.9); } 50% { opacity: 1; transform: translateY(-4px) scale(1.08); } }
+
+.sv-approved-banner {
+    display: flex; align-items: center; gap: 1rem;
+    background: linear-gradient(120deg, rgba(34,197,94,0.11), rgba(139,92,246,0.07));
+    border: 1px solid rgba(34,197,94,0.32); border-radius: var(--radius-md);
+    padding: 1.1rem 1.4rem; margin-bottom: 0.8rem;
+    box-shadow: 0 10px 28px rgba(34,197,94,0.15);
+    animation: sv-fade-in 0.5s cubic-bezier(0.16,1,0.3,1) both;
+}
+.sv-approved-banner-icon { font-size: 2.1rem; }
+.sv-approved-banner-title { font-family: var(--font-display); font-weight: 700; font-size: 1.2rem; color: #15803D; }
+.sv-approved-banner-badge {
+    margin-left: auto; background: var(--color-success); color: #fff; font-weight: 700;
+    font-size: 0.78rem; padding: 0.35rem 0.9rem; border-radius: 999px;
+}
+
+/* Contrepartie : révision requise (JAMAIS de guirlande dans ce cas) */
+.sv-revision-banner {
+    display: flex; align-items: center; gap: 1rem;
+    background: linear-gradient(120deg, rgba(217,119,6,0.10), rgba(236,72,153,0.05));
+    border: 1px solid rgba(217,119,6,0.30); border-radius: var(--radius-md);
+    padding: 1.1rem 1.4rem; margin-bottom: 0.8rem;
+    box-shadow: 0 10px 26px rgba(217,119,6,0.12);
+    animation: sv-fade-in 0.5s cubic-bezier(0.16,1,0.3,1) both;
+}
+.sv-revision-banner-icon { font-size: 2rem; animation: sv-rotate-slow 3.5s linear infinite; }
+@keyframes sv-rotate-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.sv-revision-banner-title { font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; color: var(--color-warning); }
+.sv-revision-banner-badge {
+    margin-left: auto; background: var(--color-warning); color: #fff; font-weight: 700;
+    font-size: 0.78rem; padding: 0.35rem 0.9rem; border-radius: 999px;
+}
+/* Boucle de révision Reviewer -> Codeur, rendue lisible visuellement (§16) */
+.sv-revision-loop {
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap;
+    font-family: var(--font-mono); font-size: 0.74rem; color: var(--color-warning);
+    background: rgba(217,119,6,0.06); border: 1px dashed rgba(217,119,6,0.32);
+    border-radius: 999px; padding: 0.4rem 1rem; margin-bottom: 0.8rem;
+}
+
+.sv-docker-success-banner {
+    display: flex; align-items: center; gap: 0.7rem;
+    background: rgba(6,182,212,0.08); border: 1px solid rgba(6,182,212,0.30);
+    border-radius: var(--radius-sm); padding: 0.65rem 1rem; margin-bottom: 0.7rem;
+    font-weight: 600; font-size: 0.9rem; color: #0E7490;
+    animation: sv-fade-in 0.4s ease both;
+}
+.sv-docker-success-check {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%; background: var(--color-accent); color: #fff;
+    font-size: 0.75rem; animation: sv-check-pop 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes sv-check-pop { from { transform: scale(0); } to { transform: scale(1); } }
+
+/* ---------- Compléments (compatibilité) ---------- */
+.sv-agent-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 0.4rem; background: var(--color-primary-light); }
+.sv-code-block { margin: 0; padding: 1rem 1.1rem; font-size: 0.85rem; line-height: 1.6; overflow-x: auto; background: transparent; color: #D9D2FF; }
+.sv-export-card { border-top: 3px solid var(--color-primary-light); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1400px) {
+    .sv-hero-title { font-size: 2.5rem; }
+    .sv-node-desc { font-size: 0.65rem; }
+}
+/* Cible explicitement le 1366x768 : le pipeline 5 noeuds reste sur une
+   seule ligne, seules les tailles diminuent -- aucun débordement. */
+@media (max-width: 1366px) {
+    .block-container { padding-top: 1.4rem; max-width: 100%; }
+    .sv-hero { padding: 2.4rem 2.2rem; }
+    .sv-hero-title { font-size: 2.25rem; }
+    .sv-node { min-width: 84px; }
+    .sv-node-dot { width: 42px; height: 42px; font-size: 1.1rem; }
+    .sv-trace, .sv-trace-progress { top: 31px; }
+    .sv-flow-spark { top: 24px; }
+    .sv-stat-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 1100px) {
+    .sv-stat-grid { grid-template-columns: repeat(2, 1fr); }
+    .sv-workflow { flex-wrap: wrap; row-gap: 1.2rem; }
+    .sv-node { flex: 1 1 30%; }
+    .sv-trace, .sv-trace-progress, .sv-flow-spark { display: none; }
+}
+@media (max-width: 700px) {
+    .sv-hero { padding: 2.2rem 1.6rem; }
+    .sv-hero-title { font-size: 2rem; }
+    .block-container { padding-left: 0.8rem; padding-right: 0.8rem; }
+    .sv-agent-card { padding: 1.2rem 1.3rem; }
+    .sv-stat-grid { grid-template-columns: 1fr; }
+    .sv-node { flex: 1 1 45%; }
+}

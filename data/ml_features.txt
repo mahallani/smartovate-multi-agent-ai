@@ -1,0 +1,37 @@
+TARGET: revision_required
+
+complexity_ord
+is_complex
+task_length
+task_word_count
+contains_api
+contains_database
+contains_jwt
+contains_csv
+contains_etl
+contains_multi_agent
+contains_authentication
+contains_visualization
+contains_python
+contains_pipeline
+contains_crud
+planner_execution_time
+planner_prompt_tokens
+planner_completion_tokens
+planner_total_tokens
+coder_execution_time
+coder_prompt_tokens
+coder_completion_tokens
+coder_total_tokens
+code_length
+code_line_count
+tokens_per_line
+planner_ratio
+coder_ratio
+code_density
+
+DO NOT USE DIRECTLY AS FEATURES:
+execution_id, task, reviewer_status, revision_count, total_execution_time,
+total_tokens, docker_status, has_docker, docker_execution_time, docker_exit_code,
+reviewer_execution_time, reviewer_prompt_tokens, reviewer_completion_tokens,
+reviewer_total_tokens

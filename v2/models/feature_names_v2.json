@@ -1,0 +1,14 @@
+[
+  "estimated_task_complexity",
+  "code_length",
+  "task_complexity_score",
+  "planner_ratio",
+  "technical_keyword_count",
+  "code_line_count",
+  "contains_api",
+  "planner_completion_tokens",
+  "planner_execution_time",
+  "coder_total_tokens",
+  "coder_prompt_tokens",
+  "coder_completion_tokens"
+]
